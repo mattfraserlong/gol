@@ -24,8 +24,27 @@ int main() {
 
     SDL_Surface* surface = SDL_GetWindowSurface(window);
 
-    SDL_Rect rect = (SDL_Rect){30, 40, 50, 60};
+    /* Draw horizontal grid*/
+    for (int i = 0; i <= WIDTH; i++) {
+        for (int j = 0; j <= HEIGHT; j += 15) {
+            SDL_Rect rect = (SDL_Rect){i, j, 1, 1};
+            SDL_FillRect(surface, &rect, COLOUR_WHITE);
+        }
+    }
+
+    /* Draw vertical grid*/
+    for (int i = 0; i <= HEIGHT; i++) {
+        for (int j = 0; j <= WIDTH; j += 15) {
+            SDL_Rect rect = (SDL_Rect){j, i, 1, 1};
+            SDL_FillRect(surface, &rect, COLOUR_WHITE);
+        }
+    }
+
+    /*Add a square into the grid*/
+    SDL_Rect rect = (SDL_Rect){15, 15, 15, 15};
     SDL_FillRect(surface, &rect, COLOUR_WHITE);
+
+
 
     SDL_UpdateWindowSurface(window);
 
