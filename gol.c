@@ -8,6 +8,8 @@ int main() {
     const char *WINDOW_TITLE = "Game of Life";
     const int WIDTH = 900;
     const int HEIGHT = 600;
+    int *xpos;
+    int *ypos;
     const Uint32 DELAY = 10000;
     const Uint32 COLOUR_WHITE = 0Xffffffff;
 
@@ -44,7 +46,10 @@ int main() {
     SDL_Rect rect = (SDL_Rect){15, 15, 15, 15};
     SDL_FillRect(surface, &rect, COLOUR_WHITE);
 
-
+    /*Detect mouse position*/
+    //https://www.studyplan.dev/sdl-dev/sdl2-mouse-state
+    SDL_GetMouseState(&xpos, &ypos);
+    printf("Mouse is at %d, %d", &xpos, &ypos);
 
     SDL_UpdateWindowSurface(window);
 
