@@ -4,28 +4,15 @@
 #include <SDL2/SDL.h>
 #include <stdbool.h>
 
-int main() {
-    const char *WINDOW_TITLE = "Game of Life";
-    const int WIDTH = 900;
-    const int HEIGHT = 600;
-    int *xpos;
-    int *ypos;
-    const Uint32 DELAY = 10000;
-    const Uint32 COLOUR_WHITE = 0Xffffffff;
+const char *WINDOW_TITLE = "Game of Life";
+const int WIDTH = 900;
+const int HEIGHT = 600;
+const Uint32 DELAY = 10000;
+const Uint32 COLOUR_WHITE = 0Xffffffff;
 
-    SDL_Event event;
-    bool quit = false;
+//int drawGrid(SDL_Surface *surface, int WIDTH, int HEIGHT);
 
-    SDL_Init(SDL_INIT_VIDEO);
-    SDL_Window* window = SDL_CreateWindow (
-        WINDOW_TITLE,
-        SDL_WINDOWPOS_CENTERED,
-        SDL_WINDOWPOS_CENTERED,
-        WIDTH, HEIGHT, 0
-    );
-
-    SDL_Surface* surface = SDL_GetWindowSurface(window);
-
+int drawGrid (SDL_Surface *surface, int WIDTH, int HEIGHT) {
     /* Draw horizontal grid*/
     for (int i = 0; i <= WIDTH; i++) {
         for (int j = 0; j <= HEIGHT; j += 15) {
@@ -41,17 +28,31 @@ int main() {
             SDL_FillRect(surface, &rect, COLOUR_WHITE);
         }
     }
+    return 0;
+}
+
+int main() {
+    int *xpos;
+    int *ypos;
+
+    SDL_Event event;
+    bool quit = false;
+
+    SDL_Init(SDL_INIT_VIDEO);
+    SDL_Window* window = SDL_CreateWindow (
+        WINDOW_TITLE,
+        SDL_WINDOWPOS_CENTERED,
+        SDL_WINDOWPOS_CENTERED,
+        WIDTH, HEIGHT, 0
+    ); 
+
+    SDL_Surface *surface = SDL_GetWindowSurface(window);
+
+    drawGrid(surface, 900, 600);
 
     /*Add a square into the grid*/
     SDL_Rect rect = (SDL_Rect){15, 15, 15, 15};
     SDL_FillRect(surface, &rect, COLOUR_WHITE);
-
-    /*Detect mouse position*/
-    //https://www.studyplan.dev/sdl-dev/sdl2-mouse-state
-    SDL_GetMouseState(&xpos, &ypos);
-    printf("Mouse is at %d, %d", &xpos, &ypos);
-
-    SDL_UpdateWindowSurface(window);
 
     /* loop to make window appear and quit on key press*/
     while (!quit){
