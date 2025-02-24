@@ -1,5 +1,13 @@
 //Using SDL: https://wiki.libsdl.org/SDL2/FrontPage
 
+/* Conways laws */
+/*
+1. Any live cell with fewer than two live neighbours dies, as if by underpopulation.
+2. Any live cell with two or three live neighbours lives on to the next generation.
+3. Any live cell with more than three live neighbours dies, as if by overpopulation.
+4. Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <SDL2/SDL.h>
@@ -14,12 +22,13 @@ const int ROWS = 40;
 const char* WINDOW_TITLE = "Game of Life";
 const Uint32 COLOUR_WHITE = 0Xffffffff;
 const Uint32 COLOUR_BLACK = 0X00000000;
+const Uint32 COLOUR_BLUE = 0X50505050;
 
 // global variables
 bool quit = false;
 int gridData[ROWS][COLUMNS];
-int cell_width = WINDOW_WIDTH/COLUMNS;
-int cell_height = WINDOW_HEIGHT/ROWS;
+int cell_width = WINDOW_WIDTH/COLUMNS-2;
+int cell_height = WINDOW_HEIGHT/ROWS-2;
 
 //SDL create window
 SDL_Window* createWindow(const char *WINDOW_TITLE, int WINDOW_WIDTH, int WINDOW_HEIGHT){
@@ -51,16 +60,16 @@ void drawGrid(SDL_Surface* surface, int ROWS, int COLUMNS, Uint32 COLOUR_WHITE){
 };
 
 void assignCells(SDL_Surface* surface, int ROWS, int COLUMNS) {
-    for (int i = 0; i <= (COLUMNS); i = i + cell_width) {
-        for (int j = 0; j <= (ROWS); j = j + cell_height){
+    for (int i = 0; i <= (COLUMNS); i++) {
+        for (int j = 0; j <= (ROWS); j++){
             if ((gridData[i][j] = rand() % 2) == 1) {
-                SDL_Rect rect = (SDL_Rect){i, j, cell_width, cell_height};
+                SDL_Rect rect = (SDL_Rect){i*15, j*15, cell_width, cell_height};
                 SDL_FillRect(surface, &rect, COLOUR_WHITE);
             } else {
-                SDL_Rect rect = (SDL_Rect){i, j, cell_width, cell_height};
-                SDL_FillRect(surface, &rect, COLOUR_BLACK);
+                SDL_Rect rect = (SDL_Rect){i*15, j*15, cell_width, cell_height};
+                SDL_FillRect(surface, &rect, COLOUR_BLUE);
             }
-            printf("Row = %d, Column = %d, data = %d\n", i, j, gridData[i][j]);
+            printf("Row = %d, Column = %d, data = %d\n", j, i, gridData[i][j]);
         }
     }
 };
