@@ -13,13 +13,13 @@ const int COLUMNS = 60;
 const int ROWS = 40;
 const char* WINDOW_TITLE = "Game of Life";
 const Uint32 COLOUR_WHITE = 0Xffffffff;
+const Uint32 COLOUR_BLACK = 0X00000000;
 
 // global variables
 bool quit = false;
-int** gridData;
-
-//PROBLEM HERE... WHAT DH TO SEE HOW HE HANDLED INTIALIZING
-//2D ARRAY WITH POINTERS AVOIDING SEGMENTATION FAULT.
+int gridData[ROWS][COLUMNS];
+int cell_width = WINDOW_WIDTH/COLUMNS;
+int cell_height = WINDOW_HEIGHT/ROWS;
 
 //SDL create window
 SDL_Window* createWindow(const char *WINDOW_TITLE, int WINDOW_WIDTH, int WINDOW_HEIGHT){
@@ -50,10 +50,16 @@ void drawGrid(SDL_Surface* surface, int ROWS, int COLUMNS, Uint32 COLOUR_WHITE){
     }
 };
 
-void assignCells(int ROWS, int COLUMNS) {
-    for (int i = 0; i <= ROWS; i++) {
-        for (int j = 0; j <= COLUMNS; j++){
-            gridData[i][j] = rand() % 2;
+void assignCells(SDL_Surface* surface, int ROWS, int COLUMNS) {
+    for (int i = 0; i <= (COLUMNS); i = i + cell_width) {
+        for (int j = 0; j <= (ROWS); j = j + cell_height){
+            if ((gridData[i][j] = rand() % 2) == 1) {
+                SDL_Rect rect = (SDL_Rect){i, j, cell_width, cell_height};
+                SDL_FillRect(surface, &rect, COLOUR_WHITE);
+            } else {
+                SDL_Rect rect = (SDL_Rect){i, j, cell_width, cell_height};
+                SDL_FillRect(surface, &rect, COLOUR_BLACK);
+            }
             printf("Row = %d, Column = %d, data = %d\n", i, j, gridData[i][j]);
         }
     }
@@ -77,8 +83,8 @@ int main(){
 
     //Funcs. draw on surface
     drawGrid(surface, COLUMNS, ROWS, COLOUR_WHITE);
-    assignCells(ROWS, COLUMNS);
-    drawRectangle(surface, COLOUR_WHITE);
+    assignCells(surface, ROWS, COLUMNS);
+    //drawRectangle(surface, COLOUR_WHITE);
 
     //SDL draw virtual rects onto surface
     SDL_UpdateWindowSurface(window);
