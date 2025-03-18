@@ -30,6 +30,30 @@ int gridData[ROWS][COLUMNS];
 int cell_width = WINDOW_WIDTH/COLUMNS-2;
 int cell_height = WINDOW_HEIGHT/ROWS-2;
 
+
+//Allocate memory to grid
+
+int allocateGrid(const int ROWS, const int COLUMNS) {
+    //malloc array r
+    int** gridData = (int**)malloc(ROWS * sizeof(int*));
+    //malloc array r(0)... r(4)
+        for (int i = 0; i < ROWS; i++){
+            gridData[i] = (int*)malloc(COLUMNS * sizeof(int));
+        }
+        return 0;
+    }
+
+//free grid memory after use.
+int freeGrid() {
+    for (int i = 0; i < ROWS; i++)
+        free(gridData[i]);
+
+    free(gridData); // this is causing freeing from heap error because  
+    return 0;       // scope error. Global gridData has not been through Malloc?
+
+
+}
+
 //SDL create window
 SDL_Window* createWindow(const char *WINDOW_TITLE, int WINDOW_WIDTH, int WINDOW_HEIGHT){
     SDL_Window* window = SDL_CreateWindow (
@@ -40,6 +64,7 @@ SDL_Window* createWindow(const char *WINDOW_TITLE, int WINDOW_WIDTH, int WINDOW_
     );
     return window;
 };
+
 
 //Draw grid matrix
 void drawGrid(SDL_Surface* surface, int ROWS, int COLUMNS, Uint32 COLOUR_WHITE){
@@ -69,7 +94,6 @@ void assignCells(SDL_Surface* surface, int ROWS, int COLUMNS) {
                 SDL_Rect rect = (SDL_Rect){i*15, j*15, cell_width, cell_height};
                 SDL_FillRect(surface, &rect, COLOUR_BLUE);
             }
-            printf("Row = %d, Column = %d, data = %d\n", j, i, gridData[i][j]);
         }
     }
 };
@@ -77,18 +101,21 @@ void assignCells(SDL_Surface* surface, int ROWS, int COLUMNS) {
 void drawRectangle(SDL_Surface* surface, Uint32 COLOUR_WHITE){
     SDL_Rect rect = (SDL_Rect){15, 15, 15, 15};
     SDL_FillRect(surface, &rect, COLOUR_WHITE);
-};
+}
 
 int main(){
     //SDL setup
     SDL_Event event;
     SDL_Init(SDL_INIT_VIDEO);
 
+    allocateGrid(ROWS, COLUMNS);
+
     //Func. create window
     SDL_Window* window = createWindow(WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT);
 
     //SDL apply surface into window
     SDL_Surface* surface = SDL_GetWindowSurface(window);
+
 
     //Funcs. draw on surface
     drawGrid(surface, COLUMNS, ROWS, COLOUR_WHITE);
@@ -109,8 +136,19 @@ int main(){
             }
         }
     }
+    freeGrid();
+
+    // print grid to check mem freed
+    for (int i = 0; i < ROWS; i++) {
+        for (int j = 0; j < COLUMNS; j++) {
+            printf("%d ", gridData[i][j]);
+        }
+        printf("\n");
+    }
 
     printf("Quitting\n");
     return 0;
 
-}  
+}
+
+  
