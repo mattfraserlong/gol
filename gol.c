@@ -75,6 +75,24 @@ void drawRectangle(SDL_Surface* surface, Uint32 COLOUR_WHITE){
     SDL_FillRect(surface, &rect, COLOUR_WHITE);
 }
 
+
+void drawShape(SDL_Surface* surface) {
+    gridData[10][10] = 1;
+    gridData[11][10] = 1;
+    gridData[12][10] = 1;
+    gridData[13][10] = 1;
+    gridData[14][10] = 1;
+
+    for (int i = 0; i < ROWS; i++) {
+        for (int j = 0; j < ROWS; i++){
+            if (gridData[i][j] == 1) {
+                SDL_Rect rect = (SDL_Rect){j, i, 1, 1};
+                SDL_FillRect(surface, &rect, COLOUR_WHITE);
+            }
+        }
+    }
+}
+
 int main(){
     //SDL setup
     SDL_Event event;
@@ -88,12 +106,17 @@ int main(){
     //SDL apply surface into window
     SDL_Surface* surface = SDL_GetWindowSurface(window);
 
-
     //Draw on surface
     drawGrid(surface, COLUMNS, ROWS, COLOUR_WHITE);
 
     //SDL draw virtual rects onto surface
     SDL_UpdateWindowSurface(window);
+
+    //draw one grid square
+    drawRectangle(surface, COLOUR_WHITE);
+
+    //draw a shape on screen.
+    //drawShape(surface);
 
     //Loop to make window quit on key press
     while (!quit){
