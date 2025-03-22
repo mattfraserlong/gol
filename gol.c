@@ -13,7 +13,6 @@
 #include <SDL2/SDL.h>
 #include <stdbool.h>
 
-
 // global constants
 const int WINDOW_WIDTH = 900;
 const int WINDOW_HEIGHT = 600;
@@ -29,7 +28,6 @@ bool quit = false;
 int gridData[ROWS][COLUMNS];
 int cell_width = WINDOW_WIDTH/COLUMNS-2;
 int cell_height = WINDOW_HEIGHT/ROWS-2;
-
 
 //Allocate memory to grid
 int allocateGrid(const int ROWS, const int COLUMNS) {
@@ -51,7 +49,6 @@ SDL_Window* createWindow(const char *WINDOW_TITLE, int WINDOW_WIDTH, int WINDOW_
     return window;
 };
 
-
 //Draw grid matrix
 void drawGrid(SDL_Surface* surface, int ROWS, int COLUMNS, Uint32 COLOUR_WHITE){
      // Draw horizontal grid
@@ -70,27 +67,11 @@ void drawGrid(SDL_Surface* surface, int ROWS, int COLUMNS, Uint32 COLOUR_WHITE){
     }
 };
 
-void drawRectangle(SDL_Surface* surface, Uint32 COLOUR_WHITE){
-    SDL_Rect rect = (SDL_Rect){15, 15, 15, 15};
-    SDL_FillRect(surface, &rect, COLOUR_WHITE);
-}
-
-
-void drawShape(SDL_Surface* surface) {
-    gridData[10][10] = 1;
-    gridData[11][10] = 1;
-    gridData[12][10] = 1;
-    gridData[13][10] = 1;
-    gridData[14][10] = 1;
-
-    for (int i = 0; i < ROWS; i++) {
-        for (int j = 0; j < ROWS; i++){
-            if (gridData[i][j] == 1) {
-                SDL_Rect rect = (SDL_Rect){j, i, 1, 1};
-                SDL_FillRect(surface, &rect, COLOUR_WHITE);
-            }
-        }
-    }
+void drawCell(SDL_Surface* surface, int cell_x, int cell_y){
+    int pos_x = (cell_x - 1) * (WINDOW_WIDTH/COLUMNS);
+    int pos_y = (cell_y - 1) * (WINDOW_HEIGHT/ROWS);
+    SDL_Rect cell_rect = (SDL_Rect){pos_x, pos_y, 15, 15};
+    SDL_FillRect(surface, &cell_rect, COLOUR_WHITE);
 }
 
 int main(){
@@ -98,9 +79,10 @@ int main(){
     SDL_Event event;
     SDL_Init(SDL_INIT_VIDEO);
 
+    // allocate memory to grid array
     allocateGrid(ROWS, COLUMNS);
 
-    //Create window
+    //SDL create window
     SDL_Window* window = createWindow(WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT);
 
     //SDL apply surface into window
@@ -109,14 +91,11 @@ int main(){
     //Draw on surface
     drawGrid(surface, COLUMNS, ROWS, COLOUR_WHITE);
 
-    //SDL draw virtual rects onto surface
-    SDL_UpdateWindowSurface(window);
-
     //draw one grid square
-    drawRectangle(surface, COLOUR_WHITE);
+    drawCell(surface, 10, 10);
 
-    //draw a shape on screen.
-    //drawShape(surface);
+    //SDL draw virtual rectangles onto surface
+    SDL_UpdateWindowSurface(window);
 
     //Loop to make window quit on key press
     while (!quit){
@@ -132,7 +111,6 @@ int main(){
 
     printf("Quitting\n");
     return 0;
-
 }
 
   
