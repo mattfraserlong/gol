@@ -25,17 +25,16 @@ const Uint32 COLOUR_BLUE = 0X50505050;
 
 // global variables
 bool quit = false;
-int gridData[ROWS][COLUMNS];
 int cell_width = WINDOW_WIDTH/COLUMNS-2;
 int cell_height = WINDOW_HEIGHT/ROWS-2;
 
 //Allocate memory to grid
-int allocateGrid(const int ROWS, const int COLUMNS) {
+int ** allocateGrid(const int ROWS, const int COLUMNS) {
     int** gridData = (int**)malloc(ROWS * sizeof(int*));
         for (int i = 0; i < ROWS; i++){
             gridData[i] = (int*)malloc(COLUMNS * sizeof(int));
         }
-        return 0;
+        return gridData;
     }
 
 //SDL create window
@@ -67,11 +66,20 @@ void drawGrid(SDL_Surface* surface, int ROWS, int COLUMNS, Uint32 COLOUR_WHITE){
     }
 };
 
-void drawCell(SDL_Surface* surface, int cell_x, int cell_y){
+void drawCell(SDL_Surface* surface, int** grid, int cell_x, int cell_y){
     int pos_x = (cell_x - 1) * (WINDOW_WIDTH/COLUMNS);
     int pos_y = (cell_y - 1) * (WINDOW_HEIGHT/ROWS);
+    grid[cell_x][cell_y] = 1;
     SDL_Rect cell_rect = (SDL_Rect){pos_x, pos_y, 15, 15};
     SDL_FillRect(surface, &cell_rect, COLOUR_WHITE);
+}
+
+void print2DArray (int** grid){
+    for (int i = 0; i < ROWS; i++){
+        for (int j = 0; j < ROWS; j++){
+            printf("%d", grid[i][j]);
+        }
+    }
 }
 
 int main(){
@@ -80,7 +88,7 @@ int main(){
     SDL_Init(SDL_INIT_VIDEO);
 
     // allocate memory to grid array
-    allocateGrid(ROWS, COLUMNS);
+    int **grid = allocateGrid(ROWS, COLUMNS);
 
     //SDL create window
     SDL_Window* window = createWindow(WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -91,13 +99,25 @@ int main(){
     //Draw on surface
     drawGrid(surface, COLUMNS, ROWS, COLOUR_WHITE);
 
-    //draw one grid square
-    drawCell(surface, 10, 10);
+    //draw grid squares and assign square to grid array
+    drawCell(surface, grid, 10, 10);
+    drawCell(surface, grid, 9, 10);
+    drawCell(surface, grid, 8, 10);
+    drawCell(surface, grid, 7, 10);
+    drawCell(surface, grid, 6, 10);
+    drawCell(surface, grid, 6, 9);
+    drawCell(surface, grid, 6, 8);
 
-    //SDL draw virtual rectangles onto surface
+    //print array values
+    print2DArray(grid);
+
+    //SDL update window surface
     SDL_UpdateWindowSurface(window);
 
-    //Loop to make window quit on key press
+    //create next generation
+
+
+    //Quit loop
     while (!quit){
         while (SDL_PollEvent(&event)){
             if (event.type == SDL_KEYDOWN){
@@ -109,7 +129,6 @@ int main(){
         }
     }
 
-    printf("Quitting\n");
     return 0;
 }
 
