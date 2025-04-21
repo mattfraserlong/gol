@@ -8,16 +8,18 @@
 4. Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
 */
 
+//OK, Code Review with Gemini 2.5, shows lots of issues to fix
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <SDL2/SDL.h>
 #include <stdbool.h>
 
 // global constants
-const int WINDOW_WIDTH = 900;
-const int WINDOW_HEIGHT = 600;
-const int COLUMNS = 60;
-const int ROWS = 40;
+const int WINDOW_WIDTH = 600;
+const int WINDOW_HEIGHT = 400;
+const int COLUMNS = 30;
+const int ROWS = 20;
 const char* WINDOW_TITLE = "Game of Life";
 const Uint32 COLOUR_WHITE = 0Xffffffff;
 const Uint32 COLOUR_BLACK = 0X00000000;
@@ -25,17 +27,23 @@ const Uint32 COLOUR_BLUE = 0X50505050;
 
 // global variables
 bool quit = false;
-int cell_width = WINDOW_WIDTH/COLUMNS-2;
-int cell_height = WINDOW_HEIGHT/ROWS-2;
+//int cell_width = WINDOW_WIDTH/COLUMNS-2;
+//int cell_height = WINDOW_HEIGHT/ROWS-2;
 
 //Allocate memory to grid
 int** allocateGrid(const int ROWS, const int COLUMNS) {
-    int** gridData = (int**)malloc(COLUMNS * sizeof(int*));
-        for (int i = 0; i < COLUMNS; i++){
-            gridData[i] = (int*)malloc(ROWS * sizeof(int));
+    int** gridData = (int**)malloc((COLUMNS) * sizeof(int*));
+        for (int i = 0; i < ROWS; i++){
+            gridData[i] = (int*)malloc((COLUMNS) * sizeof(int));
         }
-        return gridData;
+    for (int i = 0; i < ROWS; i++){
+        for (int j = 0; j < COLUMNS; j++){
+            gridData[i][j] = 0;
+        }
     }
+    return gridData;
+    //free(gridData);
+}
 
 //SDL create window
 SDL_Window* createWindow(const char* WINDOW_TITLE, int WINDOW_WIDTH, int WINDOW_HEIGHT){
@@ -50,14 +58,14 @@ SDL_Window* createWindow(const char* WINDOW_TITLE, int WINDOW_WIDTH, int WINDOW_
 
 //Draw grid matrix
 void drawGrid(SDL_Surface* surface, const int ROWS, const int COLUMNS, Uint32 COLOUR_WHITE){
-     // Draw horizontal grid
+     // Draw horizontal lines
      for (int i = 0; i <= WINDOW_WIDTH; i++) {
-        for (int j = 0; j <= WINDOW_HEIGHT; j += WINDOW_WIDTH/ROWS) {
+        for (int j = 0; j <= WINDOW_HEIGHT; j+= WINDOW_WIDTH/ROWS) {
             SDL_Rect rect = (SDL_Rect){i, j, 1, 1};
             SDL_FillRect(surface, &rect, COLOUR_WHITE);
         }
     }
-    /* Draw vertical grid */
+    /* Draw vertical lines */
     for (int i = 0; i <= WINDOW_HEIGHT; i++) {
         for (int j = 0; j <= WINDOW_WIDTH; j += WINDOW_HEIGHT/COLUMNS) {
             SDL_Rect rect = (SDL_Rect){j, i, 1, 1};
@@ -67,21 +75,21 @@ void drawGrid(SDL_Surface* surface, const int ROWS, const int COLUMNS, Uint32 CO
 }
 
 void drawCell(SDL_Surface* surface, int** grid, int cell_x, int cell_y){
-    int pos_x = (cell_x - 1) * (WINDOW_WIDTH/COLUMNS);
-    int pos_y = (cell_y - 1) * (WINDOW_HEIGHT/ROWS);
-    grid[cell_x][cell_y] = 1;
-    SDL_Rect cell_rect = (SDL_Rect){pos_x, pos_y, 15, 15};
+    int pos_x = (cell_x) * (WINDOW_WIDTH/COLUMNS);
+    int pos_y = (cell_y) * (WINDOW_HEIGHT/ROWS);
+    grid[cell_y][cell_x] = 1;
+    SDL_Rect cell_rect = (SDL_Rect){pos_x + 2, pos_y + 2, 17, 17};
     SDL_FillRect(surface, &cell_rect, COLOUR_WHITE);
 }
 
 void print2DArray (int** grid, const int ROWS, const int COLUMNS){
-    for (int i = 0; i < COLUMNS; i++){
-        for (int j = 0; j < ROWS; j++){
+    for (int i = 0; i < ROWS; i++){
+        for (int j = 0; j < COLUMNS; j++){
             printf("%d", grid[i][j]);
         }
-        printf("end of row\n");
+        printf(" ROW END %d\n", i);
     }
-    printf("END\n");
+    printf("ARRAY END\n");
 }
 
 int** nextGeneration(int** grid, const int ROWS, const int COLUMNS){
@@ -115,13 +123,22 @@ int** nextGeneration(int** grid, const int ROWS, const int COLUMNS){
     return grid;
 }
 
+void freeArrayMem(int** grid, int ROWS){
+    for (int i = 0; i < ROWS; i++){
+        free(grid[i]);
+    }
+    free(grid);
+}
+
 int main(){
     //SDL setup
     SDL_Event event;
     SDL_Init(SDL_INIT_VIDEO);
 
-    // allocate memory to grid array
+    // allocate memory to grid array and initialize
     int **grid = allocateGrid(ROWS, COLUMNS);
+
+    print2DArray(grid, ROWS, COLUMNS);
 
     //SDL create window
     SDL_Window* window = createWindow(WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -140,6 +157,7 @@ int main(){
     drawCell(surface, grid, 6, 10);
     drawCell(surface, grid, 6, 9);
     drawCell(surface, grid, 6, 8);
+    drawCell(surface, grid, 6, 7);
 
     //print array values
     print2DArray(grid, ROWS, COLUMNS);
@@ -147,10 +165,12 @@ int main(){
     //SDL update window surface
     SDL_UpdateWindowSurface(window);
 
-    //create next generation
-    int** latestGeneration = nextGeneration(grid, ROWS, COLUMNS);
+    
 
-    print2DArray(latestGeneration, ROWS, COLUMNS);
+    //create next generation
+   // int** latestGeneration = nextGeneration(grid, ROWS, COLUMNS);
+
+    //print2DArray(latestGeneration, ROWS, COLUMNS);
 
     //Quit loop
     while (!quit){
@@ -164,6 +184,8 @@ int main(){
         }
     }
     return 0;
+
+    freeArrayMem(grid, ROWS);
 }
 
   
