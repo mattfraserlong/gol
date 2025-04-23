@@ -1,15 +1,3 @@
-//Using SDL: https://wiki.libsdl.org/SDL2/FrontPage
-
-/* Conways laws */
-/*
-1. Any live cell with fewer than two live neighbours dies, as if by underpopulation.
-2. Any live cell with two or three live neighbours lives on to the next generation.
-3. Any live cell with more than three live neighbours dies, as if by overpopulation.
-4. Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
-*/
-
-//OK, Code Review with Gemini 2.5, shows lots of issues to fix
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <SDL2/SDL.h>
@@ -27,12 +15,10 @@ const Uint32 COLOUR_BLUE = 0X50505050;
 
 // global variables
 bool quit = false;
-//int cell_width = WINDOW_WIDTH/COLUMNS-2;
-//int cell_height = WINDOW_HEIGHT/ROWS-2;
 
 //Allocate memory to grid
 int** allocateGrid(const int ROWS, const int COLUMNS) {
-    int** gridData = (int**)malloc((COLUMNS) * sizeof(int*));
+    int** gridData = (int**)malloc((ROWS) * sizeof(int*));
         for (int i = 0; i < ROWS; i++){
             gridData[i] = (int*)malloc((COLUMNS) * sizeof(int));
         }
@@ -42,7 +28,6 @@ int** allocateGrid(const int ROWS, const int COLUMNS) {
         }
     }
     return gridData;
-    //free(gridData);
 }
 
 //SDL create window
@@ -92,9 +77,12 @@ void print2DArray (int** grid, const int ROWS, const int COLUMNS){
     printf("ARRAY END\n");
 }
 
+//memory managerment issues here
 int** nextGeneration(int** grid, const int ROWS, const int COLUMNS){
-    for (int i = 0; i < COLUMNS; i++){
-        for (int j = 0; j < ROWS; j++){
+    int count = 0;
+    int** nextGeneration = grid;
+    for (int i = 0; i < ROWS; i++){
+        for (int j = 0; j < COLUMNS; j++){
             for (int x = -1; x <= 1; x++){
                 for (int y = -1; y <= 1; y++){
                     int xCalc = i + x;
@@ -103,8 +91,7 @@ int** nextGeneration(int** grid, const int ROWS, const int COLUMNS){
                     if (xCalc > COLUMNS) {xCalc = 0;}
                     if (yCalc < 0) {yCalc = ROWS;}
                     if (yCalc > ROWS) {yCalc = 0;}
-                    int count = count + grid[xCalc][yCalc];
-
+                    int count = count + nextGeneration[xCalc][yCalc];
                     //laws
                     /*
                     1. Any live cell with fewer than two live neighbours dies, as if by underpopulation.
@@ -120,7 +107,7 @@ int** nextGeneration(int** grid, const int ROWS, const int COLUMNS){
             }
         }
     }
-    return grid;
+    return nextGeneration;
 }
 
 void freeArrayMem(int** grid, int ROWS){
@@ -137,8 +124,6 @@ int main(){
 
     // allocate memory to grid array and initialize
     int **grid = allocateGrid(ROWS, COLUMNS);
-
-    print2DArray(grid, ROWS, COLUMNS);
 
     //SDL create window
     SDL_Window* window = createWindow(WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -165,12 +150,10 @@ int main(){
     //SDL update window surface
     SDL_UpdateWindowSurface(window);
 
-    
-
     //create next generation
-   // int** latestGeneration = nextGeneration(grid, ROWS, COLUMNS);
+    int** latestGeneration = nextGeneration(grid, ROWS, COLUMNS);
 
-    //print2DArray(latestGeneration, ROWS, COLUMNS);
+    print2DArray(latestGeneration, ROWS, COLUMNS);
 
     //Quit loop
     while (!quit){
@@ -183,9 +166,9 @@ int main(){
             }
         }
     }
+    freeArrayMem(grid, ROWS);
     return 0;
 
-    freeArrayMem(grid, ROWS);
 }
 
   
