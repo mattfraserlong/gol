@@ -77,37 +77,34 @@ void print2DArray (int** grid, const int ROWS, const int COLUMNS){
     printf("ARRAY END\n");
 }
 
-//memory managerment issues here
 int** nextGeneration(int** grid, const int ROWS, const int COLUMNS){
+    
     int count = 0;
-    int** nextGeneration = grid;
+    int** nextGrid = grid;
+
     for (int i = 0; i < ROWS; i++){
         for (int j = 0; j < COLUMNS; j++){
             for (int x = -1; x <= 1; x++){
                 for (int y = -1; y <= 1; y++){
-                    int xCalc = i + x;
-                    int yCalc = j + y;
-                    if (xCalc < 0) {xCalc = COLUMNS;}
-                    if (xCalc > COLUMNS) {xCalc = 0;}
-                    if (yCalc < 0) {yCalc = ROWS;}
-                    if (yCalc > ROWS) {yCalc = 0;}
-                    int count = count + nextGeneration[xCalc][yCalc];
-                    //laws
-                    /*
-                    1. Any live cell with fewer than two live neighbours dies, as if by underpopulation.
-                    2. Any live cell with two or three live neighbours lives on to the next generation.
-                    3. Any live cell with more than three live neighbours dies, as if by overpopulation.
-                    4. Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
-                    */
-                    if (count < 2 && grid[i][j] == 1) {grid[i][j] = 0;}
-                    if (count == 2 || count == 3) {grid[i][j] = 1;}
-                    if (count > 3 && grid[i][j] == 1) {grid[i][j] = 0;}
-                    if (count == 3 && grid[i][j] == 0) {grid[i][j] = 1;}
+                    int xCount = i + x;
+                    int yCount = j + y;
+                        if (x == 0 && y == 0) {
+                            continue;
+                        }
+                    if (xCount == -1) {xCount = ROWS;}
+                    if (xCount == ROWS) {xCount = 0;}
+                    if (yCount == -1) {yCount = COLUMNS;}
+                    if (yCount == COLUMNS) {yCount = 0;}
+
+                    printf("%d", nextGrid[xCount][yCount]);
+                    count = count + nextGrid[xCount][yCount];
                 }
+                printf("\n");
             }
         }
     }
-    return nextGeneration;
+    printf("Count of neighbour cells is: %d \n", count);
+    return 0;
 }
 
 void freeArrayMem(int** grid, int ROWS){
@@ -122,8 +119,9 @@ int main(){
     SDL_Event event;
     SDL_Init(SDL_INIT_VIDEO);
 
-    // allocate memory to grid array and initialize
-    int **grid = allocateGrid(ROWS, COLUMNS);
+    // allocate memory to grid arrays and initialize
+    int** grid = allocateGrid(ROWS, COLUMNS);
+    int** nextGrid = allocateGrid(ROWS, COLUMNS);
 
     //SDL create window
     SDL_Window* window = createWindow(WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -147,13 +145,15 @@ int main(){
     //print array values
     print2DArray(grid, ROWS, COLUMNS);
 
+    
+
+    //next generation
+    nextGeneration(grid, ROWS, COLUMNS);
+
+    //print2DArray(nextGrid, ROWS, COLUMNS);
+
     //SDL update window surface
     SDL_UpdateWindowSurface(window);
-
-    //create next generation
-    int** latestGeneration = nextGeneration(grid, ROWS, COLUMNS);
-
-    print2DArray(latestGeneration, ROWS, COLUMNS);
 
     //Quit loop
     while (!quit){
@@ -167,8 +167,8 @@ int main(){
         }
     }
     freeArrayMem(grid, ROWS);
+    freeArrayMem(nextGrid, ROWS);
     return 0;
-
 }
 
   
