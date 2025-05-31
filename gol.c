@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <SDL2/SDL.h>
 #include <stdbool.h>
-#include <unistd.h>
 
 // Global constants
 const int WINDOW_WIDTH = 1200;
@@ -12,7 +11,6 @@ const int ROWS = 40;
 const char* WINDOW_TITLE = "Game of Life";
 const Uint32 COLOUR_WHITE = 0Xffffffff;
 const Uint32 COLOUR_BLACK = 0X00000000;
-const Uint32 COLOUR_BLUE = 0X50505050;
 
 // Global variables
 bool running = true;
@@ -60,20 +58,25 @@ SDL_Window* createWindow(const char* WINDOW_TITLE, int WINDOW_WIDTH, int WINDOW_
 };
 
 //Draw grid line
-void drawGrid(SDL_Surface* surface, const int ROWS, const int COLUMNS, Uint32 COLOUR_WHITE){
-     // Draw horizontal lines
-     for (int i = 0; i < WINDOW_WIDTH; i++){
-        for (int j = 0; j < WINDOW_HEIGHT; j+= WINDOW_WIDTH/ROWS){
-            SDL_Rect rect = (SDL_Rect){i, j, 1, 1};
-            SDL_FillRect(surface, &rect, COLOUR_WHITE);
+void drawGrid(SDL_Surface* surface, const int num_rows, const int num_cols, Uint32 color) {
+    int cell_width = WINDOW_WIDTH / num_cols;
+    int cell_height = WINDOW_HEIGHT / num_rows;
+
+    // Draw horizontal lines
+    for (int i = 0; i <= num_rows; i++) {
+        SDL_Rect line = {0, i * cell_height, WINDOW_WIDTH, 1};
+        if (i * cell_height == WINDOW_HEIGHT) { // Prevent drawing outside bounds if line is exactly at edge
+             line.y -=1;
         }
+        SDL_FillRect(surface, &line, color);
     }
     // Draw vertical lines
-    for (int i = 0; i < WINDOW_HEIGHT; i++) {
-        for (int j = 0; j < WINDOW_WIDTH; j += WINDOW_HEIGHT/COLUMNS){
-            SDL_Rect rect = (SDL_Rect){j, i, 1, 1};
-            SDL_FillRect(surface, &rect, COLOUR_WHITE);
+    for (int j = 0; j <= num_cols; j++) {
+        SDL_Rect line = {j * cell_width, 0, 1, WINDOW_HEIGHT};
+         if (j * cell_width == WINDOW_WIDTH) { // Prevent drawing outside bounds
+             line.x -=1;
         }
+        SDL_FillRect(surface, &line, color);
     }
 }
 
@@ -101,11 +104,11 @@ void drawCell(SDL_Surface* surface, int** grid, int cell_x, int cell_y){
 }
 
 //Overdraw all cells with black cells
-void clearCells(SDL_Surface* surface, int** grid){
+void clearCells(SDL_Surface* surface){
     for (int i = 0; i < ROWS; i++) {
         for (int j = 0; j < COLUMNS; j++){
-            int pos_x = i * (WINDOW_WIDTH/COLUMNS);
-            int pos_y = j * (WINDOW_HEIGHT/ROWS);
+            int pos_x = j * (WINDOW_WIDTH/COLUMNS);
+            int pos_y = i * (WINDOW_HEIGHT/ROWS);
             SDL_Rect cell_rect = (SDL_Rect){pos_x + 2, pos_y + 2, 17, 17};
             SDL_FillRect(surface, &cell_rect, COLOUR_BLACK);
         }
@@ -114,7 +117,7 @@ void clearCells(SDL_Surface* surface, int** grid){
 
 //print array state to terminal
 void print2DArray (int** grid, const int ROWS, const int COLUMNS){
-    for (int i = 0; i < ROWS-1; i++){
+    for (int i = 0; i < ROWS; i++){
         for (int j = 0; j < COLUMNS; j++){
             printf("%d", grid[i][j]);
         }
@@ -139,48 +142,48 @@ int** updateGrid(int** grid, const int ROWS, const int COLUMNS){
                 for (int y = -1; y <= 1; y++){
                     int xCount = i + x;
                     int yCount = j + y;
-                        if (x == 0 && y == 0) {
-                            continue;
-                        }
-                    if (xCount == -1) {xCount = ROWS;}
+                    if (x == 0 && y == 0) {
+                        continue;
+                    }
+                    if (xCount == -1) {xCount = ROWS - 1;}
                     if (xCount == ROWS) {xCount = 0;}
-                    if (yCount == -1) {yCount = COLUMNS;}
+                    if (yCount == -1) {yCount = COLUMNS -1;}
                     if (yCount == COLUMNS) {yCount = 0;}
-
                     //printf("%d", nextGrid[xCount][yCount]);
                     // Increment neighbour count
                     count = count + grid[xCount][yCount];
-
-                    // Conways Laws here
-                    if (grid[i][j] == 1) {
-                        // Rule 1: Any live cell with fewer than two live neighbours dies (underpopulation).
-                        if (count < 2) {
-                            nextGrid[i][j] = 0;
-                            //printf("law 1 enacted nextGrid cell has changed to: %d \n", nextGrid[i][j]);
-                        }
-                        // Rule 2: Any live cell with two or three live neighbours lives on to the next generation.
-                        else if (count == 2 || count == 3) {
-                            nextGrid[i][j] = 1;
-                            //printf("law 2 enacted nextGrid cell has changed to: %d \n", nextGrid[i][j]);
-                        }
-                        // Rule 3: Any live cell with more than three live neighbours dies (overpopulation).
-                        else if (count > 3) {
-                            nextGrid[i][j] = 0;
-                            //printf("law 3 enacted nextGrid cell has changed to: %d \n", nextGrid[i][j]);
-                        }
-                        } else { // current_grid[r][c] == DEAD
-                        // Rule 4: Any dead cell with exactly three live neighbours becomes a live cell (reproduction).
-                        if (count == 3) {
-                            nextGrid[i][j] = 1;
-                        } else {
-                            nextGrid[i][j] = 0; // Stays dead
-                        }
-                        //printf("law 4 enacted nextGrid cell has changed to: %d \n", nextGrid[i][j]);
-                    }
                 }
-                //printf("\n");
             }
+            //printf("\n");
             //printf("Neighbour count for cell %d, %d = %d \n", i, j, count);
+
+            // Conways Laws here
+            if (grid[i][j] == 1) {
+                // Rule 1: Any live cell with fewer than two live neighbours dies (underpopulation).
+                if (count < 2) {
+                    nextGrid[i][j] = 0;
+                    //printf("law 1 enacted nextGrid cell has changed to: %d \n", nextGrid[i][j]);
+                }
+                // Rule 2: Any live cell with two or three live neighbours lives on to the next generation.
+                else if (count == 2 || count == 3) {
+                    nextGrid[i][j] = 1;
+                    //printf("law 2 enacted nextGrid cell has changed to: %d \n", nextGrid[i][j]);
+                }
+                // Rule 3: Any live cell with more than three live neighbours dies (overpopulation).
+                else if (count > 3) {
+                    nextGrid[i][j] = 0;
+                    //printf("law 3 enacted nextGrid cell has changed to: %d \n", nextGrid[i][j]);
+                }
+            } else { // current_grid[r][c] == DEAD
+                // Rule 4: Any dead cell with exactly three live neighbours becomes a live cell (reproduction).
+                if (count == 3) {
+                    nextGrid[i][j] = 1;
+                } else {
+                    nextGrid[i][j] = 0; // Stays dead
+                }
+                //printf("law 4 enacted nextGrid cell has changed to: %d \n", nextGrid[i][j]);  
+            }
+            // Reset neighbour count
             count = 0;
         }
     }
@@ -214,7 +217,7 @@ int main(){
     SDL_Surface* surface = SDL_GetWindowSurface(window);
 
     //Draw grid onto window surface (virtual) and update 2D array state
-    drawGrid(surface, COLUMNS, ROWS, COLOUR_WHITE);
+    drawGrid(surface, ROWS, COLUMNS, COLOUR_WHITE);
 
     //draw glider 1 (virtual)
     drawCell(surface, grid, 10, 10);
@@ -252,7 +255,7 @@ int main(){
         int** nextGrid = updateGrid(grid, ROWS, COLUMNS);
 
         //clear grid for next generation
-        clearCells(surface, grid);
+        clearCells(surface);
 
         //SDL update window surface
         //SDL_UpdateWindowSurface(window);
@@ -267,12 +270,16 @@ int main(){
         SDL_UpdateWindowSurface(window);
 
         // Increment state
-        grid = nextGrid;
+        int** oldGrid = grid;
+        grid = nextGrid; // grid now points to the new generation data
+        if (oldGrid != NULL) { // Ensure oldGrid was actually allocated
+            freeArrayMem(oldGrid, ROWS); // Free the old generation's data
+        }
 
         count = count + 1;
         printf("Generation No: %d\n", count);
 
-        SDL_Delay(500); // Cap frame rate
+        SDL_Delay(100); // Cap frame rate
 
     }
 
