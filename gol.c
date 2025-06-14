@@ -4,10 +4,11 @@
 #include <stdbool.h>
 
 // Global constants
-const int WINDOW_WIDTH = 600;
-const int WINDOW_HEIGHT = 400;
-const int COLUMNS = 30;
-const int ROWS = 20;
+const int WINDOW_WIDTH = 1200;
+const int WINDOW_HEIGHT = 800;
+const int COLUMNS = 60;
+const int CELL_WIDTH = WINDOW_WIDTH/COLUMNS;
+const int ROWS = 40;
 const char* WINDOW_TITLE = "Game of Life";
 const Uint32 COLOUR_WHITE = 0Xffffffff;
 const Uint32 COLOUR_BLACK = 0X00000000;
@@ -208,13 +209,13 @@ void drawGliders(SDL_Window* window, SDL_Surface* surface, int**grid) {
     drawCell(surface, grid, 12, 9, window);
     drawCell(surface, grid, 12, 10, window);
     drawCell(surface, grid, 12, 11, window);
-    /*draw glider 2 (virtual)
+    //draw glider 2 (virtual)
     drawCell(surface, grid, 20, 20, window);
     drawCell(surface, grid, 21, 21, window);
     drawCell(surface, grid, 22, 19, window);
     drawCell(surface, grid, 22, 20, window);
     drawCell(surface, grid, 22, 21, window);
-    */
+    
     //SDL update window surface (virtual to real)
     SDL_UpdateWindowSurface(window);
 }
@@ -247,30 +248,29 @@ int main(){
             } else if (event.type == SDL_MOUSEBUTTONDOWN){
                 Sint32 mouseX = event.button.x;
                 Sint32 mouseY = event.button.y;
-                //SDL_GetMouseState(&mouseX, &mouseY); // Gets mouse state relative to the window
                 printf("Mouse Coordinates: X = %d, Y = %d\n", mouseX, mouseY);
+                drawCell(surface, grid, (mouseX/CELL_WIDTH), (mouseY/CELL_WIDTH), window);
             }
-            if (!paused) {
-                /***********Game logic goes here*********/
-                /****************************************/
+        }
+        if (!paused) {
+            /***********Game logic goes here*********/
+            /****************************************/
+            //Next generation state in 2D array
+            int** nextGrid = updateGrid(grid, ROWS, COLUMNS);
 
-                //Next generation state in 2D array
-                int** nextGrid = updateGrid(grid, ROWS, COLUMNS);
+            //clear grid for next generation
+            clearCells(surface, window);
 
-                //clear grid for next generation
-                clearCells(surface, window);
+            // Draw cells onto virtual grid if cell state = 1
+            drawAllCells(surface, nextGrid, window);
 
-                // Draw cells onto virtual grid if cell state = 1
-                drawAllCells(surface, nextGrid, window);
-
-                // Increment state and deallocate memory
-                int** oldGrid = grid;
-                grid = nextGrid; // grid now points to the new generation data
-                if (oldGrid != NULL) { // Ensure oldGrid was actually allocated
-                    freeArrayMem(oldGrid, ROWS); // Free the old generation's data
-                }
-                SDL_Delay(100); // Cap frame rate
+            // Increment state and deallocate memory
+            int** oldGrid = grid;
+            grid = nextGrid; // grid now points to the new generation data
+            if (oldGrid != NULL) { // Ensure oldGrid was actually allocated
+                freeArrayMem(oldGrid, ROWS); // Free the old generation's data
             }
+            SDL_Delay(100); // Cap frame rate
         }
     }
     // Clean up
