@@ -103,7 +103,7 @@ void drawCell(SDL_Surface* surface, int** grid, int cell_x, int cell_y, SDL_Wind
     int pos_y = (cell_y) * (WINDOW_HEIGHT/ROWS);
     grid[cell_y][cell_x] = 1;
     SDL_Rect cell_rect = (SDL_Rect){pos_x + 2, pos_y + 2, 17, 17};
-    SDL_FillRect(surface, &cell_rect, COLOUR_WHITE);
+    SDL_FillRect(surface, &cell_rect, COLOUR_WHITE);  
     //SDL update window surface
     SDL_UpdateWindowSurface(window);
 }
@@ -117,20 +117,9 @@ void clearCells(SDL_Surface* surface, SDL_Window* window){
             SDL_Rect cell_rect = (SDL_Rect){pos_x + 2, pos_y + 2, 17, 17};
             SDL_FillRect(surface, &cell_rect, COLOUR_BLACK);
         }
-    }
-    //SDL update window surface
+    }  
+    //SDL update window surface (virtual to real)
     SDL_UpdateWindowSurface(window);
-}
-
-//print array state to terminal
-void print2DArray (int** grid, const int ROWS, const int COLUMNS){
-    for (int i = 0; i < ROWS; i++){
-        for (int j = 0; j < COLUMNS; j++){
-            printf("%d", grid[i][j]);
-        }
-        printf(" ROW END %d\n", i);
-    }
-    printf("ARRAY END\n");
 }
 
 //create next generation state
@@ -153,7 +142,6 @@ int** updateGrid(int** grid, const int ROWS, const int COLUMNS){
                     if (xCount == ROWS) {xCount = 0;}
                     if (yCount == -1) {yCount = COLUMNS -1;}
                     if (yCount == COLUMNS) {yCount = 0;}
-                    //printf("%d", nextGrid[xCount][yCount]);
                     // Increment neighbour count
                     count = count + grid[xCount][yCount];
                 }
@@ -194,14 +182,6 @@ void freeArrayMem(int** grid, int ROWS){
     free(grid);
 }
 
-int** init (SDL_Window* window, SDL_Surface* surface) {
-    int** grid = allocateGrid(ROWS, COLUMNS);
-    clearCells(surface, window);
-    SDL_UpdateWindowSurface(window);
-    drawAllCells(surface, grid, window);
-    return grid;
-}
-
 void drawGliders(SDL_Window* window, SDL_Surface* surface, int**grid) {
     //draw glider 1 (virtual)
     drawCell(surface, grid, 10, 10, window);
@@ -215,9 +195,13 @@ void drawGliders(SDL_Window* window, SDL_Surface* surface, int**grid) {
     drawCell(surface, grid, 22, 19, window);
     drawCell(surface, grid, 22, 20, window);
     drawCell(surface, grid, 22, 21, window);
-    
-    //SDL update window surface (virtual to real)
-    SDL_UpdateWindowSurface(window);
+}
+
+int** init (SDL_Window* window, SDL_Surface* surface) {
+    int** grid = allocateGrid(ROWS, COLUMNS);
+    clearCells(surface, window);
+    drawGliders(window, surface, grid);
+    return grid;
 }
 
 int main(){
@@ -244,6 +228,8 @@ int main(){
                     running = false;
                 } else if (event.key.keysym.sym == SDLK_SPACE){
                     paused = !paused;
+                } else if (event.key.keysym.sym == SDLK_RETURN){
+                    grid = init(window, surface);
                 }
             } else if (event.type == SDL_MOUSEBUTTONDOWN){
                 Sint32 mouseX = event.button.x;
@@ -254,7 +240,6 @@ int main(){
         }
         if (!paused) {
             /***********Game logic goes here*********/
-            /****************************************/
             //Next generation state in 2D array
             int** nextGrid = updateGrid(grid, ROWS, COLUMNS);
 
@@ -272,6 +257,8 @@ int main(){
             }
             SDL_Delay(100); // Cap frame rate
         }
+        //SDL update window surface (virtual to real)
+        //SDL_UpdateWindowSurface(window);
     }
     // Clean up
     SDL_DestroyWindow(window);
