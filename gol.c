@@ -109,9 +109,10 @@ void drawCell(SDL_Surface* surface, int** grid, int cell_x, int cell_y, SDL_Wind
 }
 
 //Overdraw all cells with black cells
-void clearCells(SDL_Surface* surface, SDL_Window* window){
+void clearCells(SDL_Surface* surface, SDL_Window* window, int** grid){
     for (int i = 0; i < ROWS; i++) {
         for (int j = 0; j < COLUMNS; j++){
+            grid[i][j] = 0;
             int pos_x = j * (WINDOW_WIDTH/COLUMNS);
             int pos_y = i * (WINDOW_HEIGHT/ROWS);
             SDL_Rect cell_rect = (SDL_Rect){pos_x + 2, pos_y + 2, 17, 17};
@@ -182,25 +183,50 @@ void freeArrayMem(int** grid, int ROWS){
     free(grid);
 }
 
-void drawGliders(SDL_Window* window, SDL_Surface* surface, int**grid) {
-    //draw glider 1 (virtual)
-    drawCell(surface, grid, 10, 10, window);
-    drawCell(surface, grid, 11, 11, window);
-    drawCell(surface, grid, 12, 9, window);
-    drawCell(surface, grid, 12, 10, window);
-    drawCell(surface, grid, 12, 11, window);
-    //draw glider 2 (virtual)
-    drawCell(surface, grid, 20, 20, window);
-    drawCell(surface, grid, 21, 21, window);
-    drawCell(surface, grid, 22, 19, window);
-    drawCell(surface, grid, 22, 20, window);
-    drawCell(surface, grid, 22, 21, window);
+void drawGliderGun(SDL_Window* window, SDL_Surface* surface, int**grid) {
+    //draw glider gun
+    drawCell(surface, grid, 5, 10, window);
+    drawCell(surface, grid, 6, 10, window);
+    drawCell(surface, grid, 5, 11, window);
+    drawCell(surface, grid, 6, 11, window);
+    drawCell(surface, grid, 15, 10, window);
+    drawCell(surface, grid, 15, 11, window);
+    drawCell(surface, grid, 15, 12, window);
+    drawCell(surface, grid, 16, 9, window);
+    drawCell(surface, grid, 16, 13, window);
+    drawCell(surface, grid, 17, 8, window);
+    drawCell(surface, grid, 18, 8, window);
+    drawCell(surface, grid, 17, 14, window);
+    drawCell(surface, grid, 18, 14, window);
+    drawCell(surface, grid, 19, 11, window);
+    drawCell(surface, grid, 20, 9, window);
+    drawCell(surface, grid, 20, 13, window);
+    drawCell(surface, grid, 21, 10, window);
+    drawCell(surface, grid, 21, 11, window);
+    drawCell(surface, grid, 21, 12, window);
+    drawCell(surface, grid, 22, 11, window);
+    drawCell(surface, grid, 25, 8, window);
+    drawCell(surface, grid, 25, 9, window);
+    drawCell(surface, grid, 25, 10, window);
+    drawCell(surface, grid, 26, 8, window);
+    drawCell(surface, grid, 26, 9, window);
+    drawCell(surface, grid, 26, 10, window);
+    drawCell(surface, grid, 27, 7, window);
+    drawCell(surface, grid, 27, 11, window);
+    drawCell(surface, grid, 29, 6, window);
+    drawCell(surface, grid, 29, 7, window);
+    drawCell(surface, grid, 29, 11, window);
+    drawCell(surface, grid, 29, 12, window);
+    drawCell(surface, grid, 40, 8, window);
+    drawCell(surface, grid, 40, 9, window);
+    drawCell(surface, grid, 39, 8, window);
+    drawCell(surface, grid, 39, 9, window);
 }
 
 int** init (SDL_Window* window, SDL_Surface* surface) {
     int** grid = allocateGrid(ROWS, COLUMNS);
-    clearCells(surface, window);
-    drawGliders(window, surface, grid);
+    clearCells(surface, window, grid);
+    drawGliderGun(window, surface, grid);
     return grid;
 }
 
@@ -217,8 +243,6 @@ int main(){
     drawGrid(surface, ROWS, COLUMNS, COLOUR_WHITE, window);
     //initialise game
     int** grid = init(window, surface);
-    //draw gliders
-    drawGliders(window, surface, grid);
 
     //Game loop
     while (running){
@@ -230,6 +254,8 @@ int main(){
                     paused = !paused;
                 } else if (event.key.keysym.sym == SDLK_RETURN){
                     grid = init(window, surface);
+                } else if (event.key.keysym.sym == SDLK_LCTRL){
+                    clearCells(surface, window, grid);
                 }
             } else if (event.type == SDL_MOUSEBUTTONDOWN){
                 Sint32 mouseX = event.button.x;
@@ -244,7 +270,7 @@ int main(){
             int** nextGrid = updateGrid(grid, ROWS, COLUMNS);
 
             //clear grid for next generation
-            clearCells(surface, window);
+            clearCells(surface, window, grid);
 
             // Draw cells onto virtual grid if cell state = 1
             drawAllCells(surface, nextGrid, window);
@@ -257,8 +283,6 @@ int main(){
             }
             SDL_Delay(100); // Cap frame rate
         }
-        //SDL update window surface (virtual to real)
-        //SDL_UpdateWindowSurface(window);
     }
     // Clean up
     SDL_DestroyWindow(window);
